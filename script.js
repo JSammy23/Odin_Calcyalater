@@ -7,11 +7,10 @@ const equalsBtn = document.querySelector('[data-equals]');
 const previousOperandText = document.querySelector('[data-previous-operand]');
 const currentOperandText = document.querySelector('[data-current-operand]');
 
-let storedNumber = '';
-let clickedOperator = '';
 let firstNumber = '';
+let storedNumber = '';
+let currentOperation = null;
 let result = '';
-currentOperandText.textContent = '';
 
 
 // Functions
@@ -32,14 +31,11 @@ function divide(num1, num2) {
     return num1 / num2
 };
 
-// function operate() {
-
-// };
 
 function clear() {
     previousOperandText.textContent = ''
     currentOperandText.textContent = ''
-    clickedOperator = ''
+    currentOperation = null
     storedNumber = ''
     firstNumber = ''
     result = ''
@@ -54,7 +50,7 @@ function appendNumber(number) {
     currentOperandText.textContent = currentOperandText.textContent.toString() + number.toString()
 };
 
-function compute(num1, num2, operator) {
+function operate(num1, num2, operator) {
     switch (operator) {
         case '+':
             return add(num1, num2)
@@ -71,41 +67,46 @@ function compute(num1, num2, operator) {
     }
 }
 
-function updateDisplay() {
+function setOperation(operator) {
+    if (currentOperation !== null) evaluate()
     firstNumber = currentOperandText.textContent
-    result = compute(parseFloat(firstNumber), parseFloat(storedNumber), clickedOperator);
-    currentOperandText.textContent = result;
-    previousOperandText.textContent = firstNumber + ' ' + clickedOperator + ' ' + storedNumber;
-    storedNumber = result;
-};
+    currentOperation = operator
+    previousOperandText.textContent = `${firstNumber} ${currentOperation}`
+    currentOperandText.textContent = ''
+}
 
-// Event Listeners 
+function evaluate() {
+    if ( currentOperation === null) return
+    storedNumber = currentOperandText.textContent
+    currentOperandText.textContent = operate(parseFloat(firstNumber), parseFloat(storedNumber), currentOperation)
+    previousOperandText.textContent = `${firstNumber} ${currentOperation} ${storedNumber}`
+    currentOperation = null
+}
+
+function takeKeyboardInput(e) {
+    if (e.key >= 0 && e.key <= 9) appendNumber(e.key)
+    // if (e.key === '.') appendNumber(e.key)
+    if (e.key === '=' || e.key === 'Enter') evaluate()
+    if (e.key === 'Backspace') del()
+    if (e.key === 'Escape') clear()
+    if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/')
+      setOperation((e.key))
+  }
+
+
 
 numberBtns.forEach((button) => 
     button.addEventListener('click', () => appendNumber(button.textContent))
 );
 
 operatorBtns.forEach((button) => {
-    button.addEventListener('click', function() {
-        firstNumber = currentOperandText.textContent
-        if (firstNumber !== '' && storedNumber !== ''){
-            result = compute(parseFloat(firstNumber), parseFloat(storedNumber), clickedOperator)
-            storedNumber = result
-            previousOperandText.textContent = storedNumber + ' ' + clickedOperator
-            currentOperandText.textContent = ''
-        } else {
-            firstNumber = currentOperandText.textContent
-            storedNumber = firstNumber
-            clickedOperator = button.textContent
-            currentOperandText.textContent = ''
-            previousOperandText.textContent = storedNumber + ' ' + clickedOperator
-            firstNumber = ''
-        }
-    })
-})
+    button.addEventListener('click', () => setOperation(button.textContent))
+});
 
 allClearBtn.addEventListener('click', () => clear());
 
 deleteBtn.addEventListener('click', () => del());
 
-equalsBtn.addEventListener('click', () => updateDisplay());
+equalsBtn.addEventListener('click', () => evaluate());
+
+window.addEventListener('keydown', takeKeyboardInput);
