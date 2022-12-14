@@ -91,9 +91,9 @@ function takeKeyboardInput(e) {
     if (e.key === 'Escape') clear()
     if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/')
       setOperation((e.key))
-  }
+};
 
-
+// Event Listeners
 
 numberBtns.forEach((button) => 
     button.addEventListener('click', () => appendNumber(button.textContent))
